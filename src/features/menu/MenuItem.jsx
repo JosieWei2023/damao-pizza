@@ -1,8 +1,29 @@
 import { formatCurrency } from "../../utils/helpers";
 import Button from "../../ui/Button"
-// eslinet-disable-next-line
+import { useDispatch, useSelector } from "react-redux";
+import { addItem, getCurrentQuantityById } from "../cart/cartSlice";
+import DeleteItem from "../cart/DeleteItem";
+import UpdateItemQuantity from "../cart/UpdateItemQuantity";
+/* eslint-disable react/prop-types */
 function MenuItem({ pizza }) {
   const { id, name, unitPrice, ingredients, soldOut, imageUrl } = pizza;
+  // dispatch the action when the button is clicked
+  const dispatch = useDispatch();
+  // read the current quantity from the Redux store
+  const currentQuantity = useSelector(getCurrentQuantityById(id)); 
+  const isInCart = currentQuantity > 0;
+
+  function handleAddToCart(){
+    const newItem = {
+      pizzaId: id,
+      name,
+      unitPrice,
+      totalPrice: unitPrice * 1,
+      quantity: 1
+    }
+    // dispatch action to add pizza to cart
+    dispatch(addItem(newItem ));
+  }
 
   return (
     <li className="flex gap-4 py-2">
@@ -12,8 +33,8 @@ function MenuItem({ pizza }) {
         <p className="text-sm italic text-stone-500 capitalize">{ingredients.join(", ")}</p>
         <div className="mt-auto flex items-center justify-between">
           {!soldOut ? <p className="text-sm">{formatCurrency(unitPrice)}</p> : <p className="text-sm uppercase font-medium text-stone-500">Sold out</p>}
-
-          <Button type='small'>Add to cart</Button>
+          {isInCart && <div className="flex gap-3 items-center sm:gap-8"><UpdateItemQuantity pizzaId={id}/> <DeleteItem pizzaId={id}/></div>}
+          {!soldOut && !isInCart && <Button type='small' onClick={handleAddToCart}>Add to cart</Button>}
         </div>
       </div>
     </li>
